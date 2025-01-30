@@ -14,16 +14,25 @@ on:
 
 jobs:
   critical-path-tests:
-    if: ${{ (inputs.environment_name == 'uat' || inputs.environment_name == 'prod') }}
+    if: ${{ inputs.environment_name == 'uat' || inputs.environment_name == 'prod' }}
     runs-on: ubuntu-latest
     steps:
       - name: Run Critical Path Tests
-        run: echo "Running Critical Path Tests for ${{ inputs.environment_name }}"
-  
+        run: |
+          echo "Running Critical Path Tests for ${{ inputs.environment_name }}"
+          exit 1  # Simulating failure (remove this for actual execution)
+
   deploy:
-    needs: [critical-path-tests]
-    if: ${{ (inputs.environment_name != 'uat' && inputs.environment_name != 'prod') || (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped') && inputs.service_name != 'cerbos' }}
     runs-on: ubuntu-latest
+    needs: [critical-path-tests]
+    if: >
+      ${{
+        inputs.service_name != 'cerbos' &&
+        (
+          inputs.environment_name != 'uat' && inputs.environment_name != 'prod' ||
+          (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped')
+        )
+      }}
     steps:
       - name: Deploy Service
         run: echo "Deploying service ${{ inputs.service_name }} in ${{ inputs.environment_name }}"
