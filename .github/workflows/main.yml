@@ -22,7 +22,7 @@ jobs:
   
   deploy:
     needs: [critical-path-tests]
-    if: ${{ always() && inputs.service_name != 'cerbos' }}
+    if: ${{ (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped') && inputs.service_name != 'cerbos' }}
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Service
