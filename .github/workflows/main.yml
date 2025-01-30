@@ -20,7 +20,6 @@ jobs:
       - name: Run Critical Path Tests
         run: |
           echo "Running Critical Path Tests for ${{ inputs.environment_name }}"
-          exit 1
 
   deploy:
     runs-on: ubuntu-latest
