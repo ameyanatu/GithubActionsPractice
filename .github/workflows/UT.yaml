@@ -66,5 +66,6 @@ jobs:
       - name: Determine Test Environment
         run: |
           echo "Hello"
+          exit 1
         
     
