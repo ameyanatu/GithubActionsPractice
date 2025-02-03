@@ -58,7 +58,7 @@ jobs:
           echo "Testing in: ${{ inputs.environment_name == 'uat' && 'test' || 'uat' }} environment"
           sleep 10
           # Uncomment to test failure scenario
-          # exit 1
+          exit 1
           echo "Tests completed successfully"
 
   verify-deployment:
