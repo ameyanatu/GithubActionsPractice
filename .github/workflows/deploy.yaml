@@ -30,7 +30,6 @@ jobs:
           echo "Tests completed successfully"
 
   deploy:
-    needs: critical-path-tests
     if: alwyas() && ${{ inputs.service_name != 'cerbos' || (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped' || inputs.environment_name == 'dev' || inputs.environment_name == 'test') }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
