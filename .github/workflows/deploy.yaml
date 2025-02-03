@@ -16,28 +16,39 @@ on:
         required: true
 
 jobs:
-  critical-path-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Determine Test Environment
-        run: |
-          case "${{ inputs.environment_name }}" in
-            test) TEST_ENV="test" ;;
-            prod) TEST_ENV="uat" ;;   # Run prod tests on UAT
-            uat)  TEST_ENV="test" ;;  # Run UAT tests on test
-            sb)   TEST_ENV="test" ;;  # Run SB tests on test
-            *)    TEST_ENV="test" ;;  # Default fallback
-          esac
-          echo "TEST_ENV=$TEST_ENV" >> $GITHUB_ENV
+  # critical-path-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Determine Test Environment
+  #       run: |
+  #         case "${{ inputs.environment_name }}" in
+  #           test) TEST_ENV="test" ;;
+  #           prod) TEST_ENV="uat" ;;   # Run prod tests on UAT
+  #           uat)  TEST_ENV="test" ;;  # Run UAT tests on test
+  #           sb)   TEST_ENV="test" ;;  # Run SB tests on test
+  #           *)    TEST_ENV="test" ;;  # Default fallback
+  #         esac
+  #         echo "TEST_ENV=$TEST_ENV" >> $GITHUB_ENV
 
-      - name: Run Critical Path Tests
-        run: |
-          echo "Running critical path tests for ${{ inputs.service_name }}"
-          echo "Testing in: $TEST_ENV environment"
-          sleep 10
-          # Uncomment to simulate failure
-          # exit 1
-          echo "Tests completed successfully"
+  #     - name: Run Critical Path Tests
+  #       run: |
+  #         echo "Running critical path tests for ${{ inputs.service_name }}"
+  #         echo "Testing in: $TEST_ENV environment"
+  #         sleep 10
+  #         # Uncomment to simulate failure
+  #         # exit 1
+  #         echo "Tests completed successfully"
+
+  critical-path-tests:
+      if: ${{ needs.deploy.outputs.needs_testing == 'true' && inputs.service_name != 'cerbos' && inputs.service_name != 'router-api' }}
+      secrets: inherit
+      uses: ./.github/workflows/UT.yaml
+      with:
+        service_name: ${{ inputs.service_name }}
+        environment_name: ${{inputs.environment_name == 'prod' && 'uat' || inputs.environment_name == 'uat' && 'test' || inputs.environment_name == 'sb' && 'test' || inputs.environment_name == 'test' && 'test' }}
+        test_type: 'critical'
+        critical_test_journey: 'critical-path'
+        is_pr: false
 
   deploy:
     needs: [critical-path-tests]
