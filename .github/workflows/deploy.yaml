@@ -16,8 +16,22 @@ on:
         required: true
 
 jobs:
+  critical-path-tests:
+    if: ${{inputs.environment_name == 'uat' || inputs.environment_name == 'prod'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Critical Path Tests
+        run: |
+          echo "Running critical path tests for ${{ inputs.service_name }}"
+          echo "Testing in: ${{ inputs.environment_name == 'uat' && 'test' || 'uat' }} environment"
+          sleep 10
+          # Uncomment to test failure scenario
+          # exit 1
+          echo "Tests completed successfully"
+
   deploy:
-    if: ${{ inputs.service_name != 'cerbos' }}
+    needs: critical-path-tests
+    if: ${{ inputs.service_name != 'cerbos' || (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped') }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
     concurrency: '${{ inputs.environment_name }}-${{ inputs.service_name }}'
@@ -41,41 +55,3 @@ jobs:
           sleep 5
           echo "Deployment completed"
 
-  critical-path-tests:
-    needs: deploy
-    if: |
-      always() &&
-      needs.deploy.result == 'success' &&
-      needs.deploy.outputs.needs_testing == 'true' &&
-      inputs.service_name != 'cerbos' &&
-      inputs.service_name != 'router-api' &&
-      (inputs.environment_name == 'uat' || inputs.environment_name == 'prod')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Critical Path Tests
-        run: |
-          echo "Running critical path tests for ${{ inputs.service_name }}"
-          echo "Testing in: ${{ inputs.environment_name == 'uat' && 'test' || 'uat' }} environment"
-          sleep 10
-          # Uncomment to test failure scenario
-          exit 1
-          echo "Tests completed successfully"
-
-  verify-deployment:
-    needs: [deploy, critical-path-tests]
-    runs-on: ubuntu-latest
-    if: |
-      always() &&
-      needs.deploy.result == 'success' &&
-      (
-        needs.critical-path-tests.result == 'success' ||
-        needs.critical-path-tests.result == 'skipped'
-      )
-    steps:
-      - name: Verify Deployment Status
-        run: |
-          if [[ "${{ needs.critical-path-tests.result }}" == "success" ]]; then
-            echo "✅ Deployment and tests successful"
-          elif [[ "${{ needs.critical-path-tests.result }}" == "skipped" ]]; then
-            echo "✅ Deployment successful, tests were not required"
-          fi
