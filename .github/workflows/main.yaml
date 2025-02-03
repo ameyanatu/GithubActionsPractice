@@ -33,7 +33,7 @@ jobs:
 
   deploy-service:
     needs: [init]
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy.yaml
     with:
       service_name: ${{ inputs.service_name }}
       environment_name: ${{ inputs.environment_name }}
