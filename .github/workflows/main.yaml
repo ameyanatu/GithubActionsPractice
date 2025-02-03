@@ -26,7 +26,7 @@ jobs:
   deploy-to-dev:
     needs: build
     if: inputs.deploy_env == 'dev'
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy.yaml
     with:
       environment_name: dev
       app_version: ${{ needs.build.outputs.app_version }}
@@ -34,7 +34,7 @@ jobs:
   deploy-to-test:
     needs: [build, deploy-to-dev]
     if: inputs.deploy_env == 'test'
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy.yaml
     with:
       environment_name: test
       app_version: ${{ needs.build.outputs.app_version }}
@@ -42,7 +42,7 @@ jobs:
   deploy-to-uat:
     needs: [build, deploy-to-test]
     if: inputs.deploy_env == 'uat'
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy.yaml
     with:
       environment_name: uat
       app_version: ${{ needs.build.outputs.app_version }}
@@ -50,7 +50,7 @@ jobs:
   deploy-to-prod:
     needs: [build, deploy-to-uat]
     if: inputs.deploy_env == 'prod'
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy.yaml
     with:
       environment_name: prod
       app_version: ${{ needs.build.outputs.app_version }}
