@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Determine Test Environment
-        id: determine-env
         run: |
           case "${{ inputs.environment_name }}" in
             test) TEST_ENV="test" ;;
@@ -42,9 +41,7 @@ jobs:
 
   deploy:
     needs: [critical-path-tests]
-    if: always() && (${{ inputs.service_name != 'cerbos' }}) && (
-        (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped')
-      )
+    if: ${{ inputs.service_name != 'cerbos' }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
     concurrency: '${{ inputs.environment_name }}-${{ inputs.service_name }}'
