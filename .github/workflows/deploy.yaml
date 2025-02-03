@@ -36,7 +36,7 @@ jobs:
           echo "Testing in: $TEST_ENV environment"
           sleep 10
           # Uncomment to simulate failure
-          exit 1
+          # exit 1
           echo "Tests completed successfully"
 
   deploy:
