@@ -16,22 +16,42 @@ on:
         required: true
 
 jobs:
-  critical-path-tests:
-    if: ${{inputs.environment_name == 'uat' || inputs.environment_name == 'prod'}}
+  critical-path-tests-uat:
+    if: ${{inputs.environment_name == 'uat'}}
     runs-on: ubuntu-latest
     steps:
       - name: Run Critical Path Tests
         run: |
           echo "Running critical path tests for ${{ inputs.service_name }}"
-          echo "Testing in: ${{ inputs.environment_name == 'uat' && 'test' || 'uat' }} environment"
+          echo "Testing in: ${{ inputs.environment_name == 'test'}} environment"
+          sleep 10
+          # Uncomment to test failure scenario
+          exit 1
+          echo "Tests completed successfully"
+          
+  critical-path-tests-prod:
+    if: ${{inputs.environment_name == 'prod'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Critical Path Tests
+        run: |
+          echo "Running critical path tests for ${{ inputs.service_name }}"
+          echo "Testing in: ${{ inputs.environment_name == 'uat'}} environment"
           sleep 10
           # Uncomment to test failure scenario
           exit 1
           echo "Tests completed successfully"
 
   deploy:
-    needs: [critical-path-tests]
-    if: alwyas() && ${{ inputs.service_name != 'cerbos' || (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped' || inputs.environment_name == 'dev' || inputs.environment_name == 'test') }}
+    needs: 
+      - critical-path-tests-prod
+      - critical-path-tests-uat
+    if: always() && (${{ inputs.service_name != 'cerbos' }}) && (
+      inputs.environment_name == 'dev' ||
+      inputs.environment_name == 'test' ||
+      (needs.critical-path-tests-uat.result == 'success' || needs.critical-path-tests-uat.result == 'skipped') &&
+      (needs.critical-path-tests-prod.result == 'success' || needs.critical-path-tests-prod.result == 'skipped')
+      )
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
     concurrency: '${{ inputs.environment_name }}-${{ inputs.service_name }}'
