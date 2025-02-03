@@ -2,10 +2,17 @@ name: Main Build and Deploy
 on:
   workflow_dispatch:
     inputs:
-      deploy_env:
+      service_name:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - test-service
+          - cerbos
+          - router-api
+      environment_name:
         description: 'Target Environment'
         required: true
-        default: 'dev'
         type: choice
         options:
           - dev
@@ -14,43 +21,22 @@ on:
           - prod
 
 jobs:
-  build:
+  init:
     runs-on: ubuntu-latest
     outputs:
-      app_version: ${{ steps.set-version.outputs.version }}
+      service_version: ${{ steps.set-version.outputs.version }}
     steps:
       - name: Set Version
         id: set-version
-        run: echo "version=1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
+        run: |
+          echo "version=1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
-  deploy-to-dev:
-    needs: build
-    if: inputs.deploy_env == 'dev'
-    uses: ./.github/workflows/deploy.yaml
+  deploy-service:
+    needs: [init]
+    uses: ./.github/workflows/deploy.yml
     with:
-      environment_name: dev
-      app_version: ${{ needs.build.outputs.app_version }}
-
-  deploy-to-test:
-    needs: [build, deploy-to-dev]
-    if: inputs.deploy_env == 'test'
-    uses: ./.github/workflows/deploy.yaml
-    with:
-      environment_name: test
-      app_version: ${{ needs.build.outputs.app_version }}
-
-  deploy-to-uat:
-    needs: [build, deploy-to-test]
-    if: inputs.deploy_env == 'uat'
-    uses: ./.github/workflows/deploy.yaml
-    with:
-      environment_name: uat
-      app_version: ${{ needs.build.outputs.app_version }}
-
-  deploy-to-prod:
-    needs: [build, deploy-to-uat]
-    if: inputs.deploy_env == 'prod'
-    uses: ./.github/workflows/deploy.yaml
-    with:
-      environment_name: prod
-      app_version: ${{ needs.build.outputs.app_version }}
+      service_name: ${{ inputs.service_name }}
+      environment_name: ${{ inputs.environment_name }}
+      service_version: ${{ needs.init.outputs.service_version }}
+    secrets:
+      GH_ACTIONS_PAT: ${{ secrets.GITHUB_TOKEN }}
