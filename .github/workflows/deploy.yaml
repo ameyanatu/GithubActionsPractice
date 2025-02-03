@@ -26,7 +26,7 @@ jobs:
     needs: run-tests
     runs-on: ubuntu-latest
     if: |
-      success() &&
+      always() &&
       (
         (inputs.environment_name == 'uat' || inputs.environment_name == 'prod') &&
         needs.run-tests.result == 'success' ||
