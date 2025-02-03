@@ -1,0 +1,67 @@
+name: Run any tests
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: 'Service for which to run tests'
+        required: true
+        type: string
+      environment_name:
+        description: 'Environment for which the tests will execute (sb, test, uat, prod)'
+        default: 'test'
+        required: false
+        type: string
+      test_type:
+        description: 'Type of tests to run (unit, local_integration, inmemory_integration, deployed_integration, smoke, critical)'
+        required: true
+        type: string
+      critical_test_journey:
+        description: 'Select the critical test journey (mobile-app, walkup-lounge-access, or critical-path)'
+        required: false
+        type: string
+      is_pr:
+        description: 'Are we called from a PR?'
+        default: true
+        required: false
+        type: boolean
+
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: 'Environment for which the tests will execute'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - 'sb'
+          - 'test'
+          - 'uat'
+          - 'prod'
+      test_type:
+        description: 'Type of tests to run (smoke, critical)'
+        required: true
+        default: 'critical'
+        type: choice
+        options:
+          - 'smoke'
+          - 'critical'
+      critical_test_journey:
+        description: 'Select the critical test journey (mobile-app, walkup-lounge-access, critical-path)'
+        required: false
+        default: 'critical-path'
+        type: choice
+        options:
+          - 'mobile-app'
+          - 'walkup-lounge-access'
+          - 'critical-path'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine Test Environment
+        run: |
+          echo "Hello"
+        
+    
