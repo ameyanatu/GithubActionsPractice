@@ -1,36 +1,40 @@
-name: Test Deploy Workflow
+name: Reusable Deploy Workflow
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment_name:
-        description: "Environment (uat/prod/dev/staging)"
         required: true
-        default: "dev"
-      service_name:
-        description: "Service Name"
+        type: string
+      app_version:
         required: true
-        default: "my-service"
+        type: string
 
 jobs:
-  critical-path-tests:
+  run-tests:
     runs-on: ubuntu-latest
-    # Only run for UAT/prod environments
     if: ${{ inputs.environment_name == 'uat' || inputs.environment_name == 'prod' }}
     steps:
-      - name: Run Critical Path Tests
+      - name: Run Tests
         run: |
-          echo "Running Critical Path Tests for ${{ inputs.environment_name }}"
+          echo "Running tests for ${{ inputs.environment_name }}"
+          # Simulate tests
+          sleep 10
+          # Uncomment to test failure scenario
+          # exit 1
 
   deploy:
+    needs: run-tests
     runs-on: ubuntu-latest
-    needs: critical-path-tests
     if: |
-      always() &&
+      success() &&
       (
         (inputs.environment_name == 'uat' || inputs.environment_name == 'prod') &&
-        needs.critical-path-tests.result == 'success' ||
+        needs.run-tests.result == 'success' ||
         (inputs.environment_name != 'uat' && inputs.environment_name != 'prod')
       )
     steps:
-      - name: Deploy Service
-        run: echo "Deploying service ${{ inputs.service_name }} in ${{ inputs.environment_name }}"
+      - name: Deploy
+        run: |
+          echo "Deploying version ${{ inputs.app_version }} to ${{ inputs.environment_name }}"
+          # Simulate deployment
+          sleep 5
