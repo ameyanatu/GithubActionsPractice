@@ -43,10 +43,7 @@ jobs:
   deploy:
     needs: [critical-path-tests]
     if: always() && (${{ inputs.service_name != 'cerbos' }}) && (
-      (inputs.environment_name == 'dev' ||
-      inputs.environment_name == 'test') ||
-      ((needs.critical-path-tests-uat.result == 'success' || needs.critical-path-tests-uat.result == 'skipped') &&
-      (needs.critical-path-tests-prod.result == 'success' || needs.critical-path-tests-prod.result == 'skipped'))
+        (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped')
       )
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
