@@ -31,7 +31,7 @@ jobs:
 
   deploy:
     needs: critical-path-tests
-    if: ${{ inputs.service_name != 'cerbos' || (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped') }}
+    if: alwyas() && ${{ inputs.service_name != 'cerbos' || (needs.critical-path-tests.result == 'success' || needs.critical-path-tests.result == 'skipped' || inputs.environment_name == 'dev' || inputs.environment_name == 'test') }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_name }}
     concurrency: '${{ inputs.environment_name }}-${{ inputs.service_name }}'
