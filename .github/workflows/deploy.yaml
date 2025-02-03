@@ -16,36 +16,32 @@ on:
         required: true
 
 jobs:
-  critical-path-tests-uat:
-    if: ${{inputs.environment_name == 'uat'}}
+  critical-path-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Determine Test Environment
+        id: determine-env
+        run: |
+          case "${{ inputs.environment_name }}" in
+            test) TEST_ENV="test" ;;
+            prod) TEST_ENV="uat" ;;   # Run prod tests on UAT
+            uat)  TEST_ENV="test" ;;  # Run UAT tests on test
+            sb)   TEST_ENV="test" ;;  # Run SB tests on test
+            *)    TEST_ENV="test" ;;  # Default fallback
+          esac
+          echo "TEST_ENV=$TEST_ENV" >> $GITHUB_ENV
+
       - name: Run Critical Path Tests
         run: |
           echo "Running critical path tests for ${{ inputs.service_name }}"
-          echo "Testing in: ${{ inputs.environment_name == 'test'}} environment"
+          echo "Testing in: $TEST_ENV environment"
           sleep 10
-          # Uncomment to test failure scenario
-          exit 1
-          echo "Tests completed successfully"
-          
-  critical-path-tests-prod:
-    if: ${{inputs.environment_name == 'prod'}}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Critical Path Tests
-        run: |
-          echo "Running critical path tests for ${{ inputs.service_name }}"
-          echo "Testing in: ${{ inputs.environment_name == 'uat'}} environment"
-          sleep 10
-          # Uncomment to test failure scenario
+          # Uncomment to simulate failure
           exit 1
           echo "Tests completed successfully"
 
   deploy:
-    needs: 
-      - critical-path-tests-prod
-      - critical-path-tests-uat
+    needs: [critical-path-tests]
     if: always() && (${{ inputs.service_name != 'cerbos' }}) && (
       (inputs.environment_name == 'dev' ||
       inputs.environment_name == 'test') ||
